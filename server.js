@@ -1,6 +1,8 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const app = express();
+const bodyParser = require('body-parser');
+const _ = require('underscore');
+
 const PORT = process.env.PORT || 3000;
 
 let todos = [];
@@ -20,13 +22,14 @@ app.get('/todos', function (req, res) {
 // GET /todos/id
 app.get('/todos/:id', function (req, res) {
     const todoId = parseInt(req.params.id, 10);
-    let matchedTodo;
-
-    todos.forEach(element => {
-        if (element.id === todoId) {
-            matchedTodo = element;
-        }
-    });
+    let matchedTodo = _.findWhere(todos, {id: todoId});
+    
+    // let matchedTodo;
+    // todos.forEach(element => {
+    //     if (element.id === todoId) {
+    //         matchedTodo = element;
+    //     }
+    // });
 
     if (matchedTodo) {
         res.json(matchedTodo);
@@ -39,7 +42,13 @@ app.get('/todos/:id', function (req, res) {
 
 // POST /todos
 app.post('/todos', function (req, res) {
-    let body = req.body;
+    let body = _.pick(req.body, 'description', 'completed');
+
+    if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+        return res.status(400).send();
+    }
+
+    body.description = body.description.trim();
     body.id = todoNextId++;
     todos.push(body);
     res.json('Item added');
