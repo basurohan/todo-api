@@ -22,7 +22,7 @@ app.get('/todos', function (req, res) {
 // GET /todos/id
 app.get('/todos/:id', function (req, res) {
     const todoId = parseInt(req.params.id, 10);
-    let matchedTodo = _.findWhere(todos, {id: todoId});
+    const matchedTodo = _.findWhere(todos, {id: todoId});
     
     // let matchedTodo;
     // todos.forEach(element => {
@@ -54,6 +54,19 @@ app.post('/todos', function (req, res) {
     res.json('Item added');
 });
 
+// DELETE /todos/:id
+app.delete('/todos/:id', function (req, res) {
+    const todoId = parseInt(req.params.id, 10);
+    const matchedTodo = _.findWhere(todos, {id: todoId});
+
+    if(matchedTodo){
+        todos = _.without(todos, matchedTodo);
+        res.json(matchedTodo);
+    } else {
+        res.json('Item not found');
+    }
+
+});
 
 app.listen(PORT, function() {
     console.log('Express listening on port ' + PORT + '!');
