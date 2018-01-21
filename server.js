@@ -61,12 +61,44 @@ app.delete('/todos/:id', function (req, res) {
 
     if(matchedTodo){
         todos = _.without(todos, matchedTodo);
-        res.json(matchedTodo);
+        res.json("Item deleted");
     } else {
         res.json('Item not found');
     }
 
 });
+
+// PUT /todos/:id
+app.put('/todos/:id', function (req, res) {
+    const todoId = parseInt(req.params.id, 10);
+    let matchedTodo = _.findWhere(todos, {id: todoId});
+    let body = _.pick(req.body, 'description', 'completed');
+    let validAttributes = {};
+
+    if(!matchedTodo) {
+        return res.status(404).send();
+    }
+
+    // Check whether completed field has been provided
+    if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+        validAttributes.completed = body.completed;
+    }else if (body.hasOwnProperty('completed')) {
+        return res.status(400).send();
+    }
+
+    // Check whether description field has been provided
+    if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+        validAttributes.description = body.description;
+    }else if (body.hasOwnProperty('description')) {
+        return res.status(400).send();
+    }
+
+    //HERE - validation passed. Update values
+    _.extend(matchedTodo, validAttributes);
+    res.json('Item Updated');
+
+});
+
 
 app.listen(PORT, function() {
     console.log('Express listening on port ' + PORT + '!');
