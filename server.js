@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const _ = require('underscore');
+const db = require('./db.js');
 
 const PORT = process.env.PORT || 3000;
 
@@ -57,9 +58,15 @@ app.post('/todos', function (req, res) {
     }
 
     body.description = body.description.trim();
-    body.id = todoNextId++;
-    todos.push(body);
-    res.json('Item added');
+    // body.id = todoNextId++;
+    // todos.push(body);
+
+    db.todo.create(body).then(function (todo) {
+        res.json('Item added');
+    }, function (e) {
+        res.status(400).json(e);
+    });
+
 });
 
 // DELETE /todos/:id
@@ -107,7 +114,8 @@ app.put('/todos/:id', function (req, res) {
 
 });
 
-
-app.listen(PORT, function() {
-    console.log('Express listening on port ' + PORT + '!');
+db.sequelize.sync().then(function () {
+    app.listen(PORT, function() {
+        console.log('Express listening on port ' + PORT + '!');
+    });
 });
