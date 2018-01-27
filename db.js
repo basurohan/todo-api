@@ -20,7 +20,7 @@ if(env === 'production') {
 //     'storage': __dirname + '/data/dev-todo-api.sqlite'
 // });
 
-const db = {};
+let db = {};
 
 db.todo = sequelize.import(__dirname + '/models/todo.js');
 db.sequelize = sequelize;

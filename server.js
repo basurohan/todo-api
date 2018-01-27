@@ -134,31 +134,61 @@ app.delete('/todos/:id', function (req, res) {
 // PUT /todos/:id
 app.put('/todos/:id', function (req, res) {
     const todoId = parseInt(req.params.id, 10);
-    let matchedTodo = _.findWhere(todos, {id: todoId});
     let body = _.pick(req.body, 'description', 'completed');
-    let validAttributes = {};
+    let attributes = {};
 
-    if(!matchedTodo) {
-        return res.status(404).send();
+    if(body.hasOwnProperty('completed')) {
+        attributes.completed = body.completed;
     }
 
-    // Check whether completed field has been provided
-    if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-        validAttributes.completed = body.completed;
-    }else if (body.hasOwnProperty('completed')) {
-        return res.status(400).send();
+    if(body.hasOwnProperty('description')) {
+        attributes.description = body.description;
     }
 
-    // Check whether description field has been provided
-    if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-        validAttributes.description = body.description;
-    }else if (body.hasOwnProperty('description')) {
-        return res.status(400).send();
-    }
+    db.todo.findById(todoId).then(function (todo) {
+        if(todo) {
+            todo.update(attributes).then(function (todo) {
+                res.json({
+                    success: "Item updated"
+                })
+            }, function (e) {
+                res.status(400).json(e);
+            });
+        }else {
+            res.status(404).json({
+                error: 'Item not found'
+            });
+        }
+    }, function () {
+        res.status(500).send();
+    });
 
-    //HERE - validation passed. Update values
-    _.extend(matchedTodo, validAttributes);
-    res.json('Item Updated');
+    
+    // let matchedTodo = _.findWhere(todos, {id: todoId});
+    // let body = _.pick(req.body, 'description', 'completed');
+    // let validAttributes = {};
+
+    // if(!matchedTodo) {
+    //     return res.status(404).send();
+    // }
+
+    // // Check whether completed field has been provided
+    // if(body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
+    //     validAttributes.completed = body.completed;
+    // }else if (body.hasOwnProperty('completed')) {
+    //     return res.status(400).send();
+    // }
+
+    // // Check whether description field has been provided
+    // if(body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
+    //     validAttributes.description = body.description;
+    // }else if (body.hasOwnProperty('description')) {
+    //     return res.status(400).send();
+    // }
+
+    // //HERE - validation passed. Update values
+    // _.extend(matchedTodo, validAttributes);
+    // res.json('Item Updated');
 
 });
 
