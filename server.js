@@ -196,15 +196,11 @@ app.put('/todos/:id', function (req, res) {
 app.post('/users', function (req, res) {
     let body = _.pick(req.body, 'email', 'password');
 
-    // body.email = body.email.trim();
-    // body.password = body.password.trim();
-
     db.user.create(body).then(function (user) {
-        res.json('User added');
+        res.json(user.toPublicJSON());
     }, function (e) {
         res.status(400).json(e);
     });
-
 });
 
 db.sequelize.sync().then(function () {
