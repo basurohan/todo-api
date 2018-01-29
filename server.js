@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const _ = require('underscore');
 const db = require('./db.js');
 const bcrypt = require('bcrypt');
+const middleware = require('./middleware.js')(db);
 
 const PORT = process.env.PORT || 3000;
 
@@ -17,7 +18,7 @@ app.get('/', function (req, res) {
 });
 
 // GET  /todos?completed=true&q=
-app.get('/todos', function (req, res) {
+app.get('/todos', middleware.requireAuthentication, function (req, res) {
     const query = req.query;
     let where = {};
 
@@ -57,7 +58,7 @@ app.get('/todos', function (req, res) {
 });
 
 // GET /todos/id
-app.get('/todos/:id', function (req, res) {
+app.get('/todos/:id', middleware.requireAuthentication, function (req, res) {
     const todoId = parseInt(req.params.id, 10);
     // const matchedTodo = _.findWhere(todos, {id: todoId});
     // if (matchedTodo) {
@@ -80,7 +81,7 @@ app.get('/todos/:id', function (req, res) {
 });
 
 // POST /todos
-app.post('/todos', function (req, res) {
+app.post('/todos', middleware.requireAuthentication, function (req, res) {
     let body = _.pick(req.body, 'description', 'completed');
 
     if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
@@ -100,7 +101,7 @@ app.post('/todos', function (req, res) {
 });
 
 // DELETE /todos/:id
-app.delete('/todos/:id', function (req, res) {
+app.delete('/todos/:id', middleware.requireAuthentication, function (req, res) {
     const todoId = parseInt(req.params.id, 10);
     
     db.todo.destroy({
@@ -119,8 +120,6 @@ app.delete('/todos/:id', function (req, res) {
         res.status(500).send();
     });
 
-
-    
     // const matchedTodo = _.findWhere(todos, {id: todoId});
 
     // if(matchedTodo){
