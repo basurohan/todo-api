@@ -52,7 +52,7 @@ module.exports = function (sequelize, DataTypes) {
         // }
     });
 
-    // Class Method
+    // Class Methods
     User.authenticate = function (body) {
         return new Promise(function (resolve, reject) {
             if(!body.hasOwnProperty('email') && !body.hasOwnProperty('password') && !_.isString(body.email) && !_.isString(body.password)) {
@@ -97,7 +97,7 @@ module.exports = function (sequelize, DataTypes) {
         });
     };
 
-    // Instance method
+    // Instance methods
     User.prototype.toPublicJSON = function () {
         const json = this.toJSON();
         return _.pick(json, 'id', 'email', 'createdAt', 'updatedAt');

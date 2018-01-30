@@ -93,11 +93,15 @@ app.post('/todos', middleware.requireAuthentication, function (req, res) {
     // todos.push(body);
 
     db.todo.create(body).then(function (todo) {
-        res.json('Item added');
+        // res.json('Item added');
+        req.user.addTodo(todo).then(function () {
+            return todo.reload();  //as the todo that we initially referenced is now different due to the added association
+        }).then(function (todo) {
+            res.json(todo.toJSON());
+        });
     }, function (e) {
         res.status(400).json(e);
     });
-
 });
 
 // DELETE /todos/:id
