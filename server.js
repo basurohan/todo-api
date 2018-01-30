@@ -105,6 +105,8 @@ app.post('/todos', middleware.requireAuthentication, function (req, res) {
             return todo.reload();  //as the todo that we initially referenced is now different due to the added association
         }).then(function (todo) {
             res.json(todo.toJSON());
+        }).catch(function (e) {
+            console.log(e);
         });
     }, function (e) {
         res.status(400).json(e);
@@ -223,19 +225,35 @@ app.post('/users', function (req, res) {
 // POST /users/login
 app.post('/users/login', function (req, res) {
     const body = _.pick(req.body, 'email', 'password');
+    let userInstance;
     
     db.user.authenticate(body).then(function (user) {
-        const token = user.generateToken('authentication');
+        let token = user.generateToken('authentication');
+        userInstance = user;
 
-        if (token) {
-            res.header('Auth', token).json(user.toPublicJSON());
-        }else {
-            res.status(401).send();
-        }
-    }, function (e) {
-        res.status(401).send();
+        return db.token.create({
+            token: token
+        });
+
+        // if (token) {
+        //     res.header('Auth', token).json(user.toPublicJSON());
+        // }else {
+        //     res.status(401).send();
+        // }
+    }).then(function (tokenInstance) {
+        res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+    }).catch(function (e) {
+        res.status(401).json(e);
     });
+});
 
+// DELETE /users/login
+app.delete('/users/login', middleware.requireAuthentication, function (req, res) {
+    req.token.destroy().then(function () {
+        res.status(204).send();
+    }).catch(function () {
+        res.status(500).send();
+    });
 });
 
 
